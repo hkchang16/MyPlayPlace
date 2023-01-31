@@ -1,0 +1,38 @@
+import pandas as pd
+import glob
+
+location = '//Users//chingchang//Downloads//2023 Invoice//ABIGAIL GAVALDA//*.xlsx'
+excel_files = glob.glob(location)
+
+df1 = pd.DataFrame()
+data = []
+for excel_file in excel_files:
+    df1 = pd.read_excel(excel_file, index_col=0, header=0)
+    data.append(df1)
+    
+df2 = pd.concat(data)
+# All with index value of 1
+df2 = df2.loc[1]
+# Splits 'Invoice' column into 'Start' and 'End' and adds them to the end of the rows
+df2[['Start', 'End']] = df2.Invoice.str.split(" - ", expand = True)
+
+# First idea. Didnt work
+# for df2[df2['End']] == '' :
+#     df2['Start'] == '00/00/0000'
+
+# ChatGPT's idea. Had seen similiar online. Replaces entire 'Start' column with '01/01/1990'
+# empty = df2[df2['End'].isnull()].index
+# for i in empty:
+#     df2.at[i, 'Start'] = "01/01/1990"
+
+# Convert 'Start' column to datetime
+df2['Start'] = pd.to_datetime(df2['Start'])
+
+# df2.sort_values(by='Start', inplace = True)
+df2.sort_values(by='Start', inplace = True).drop('Start', axis=1).drop('End', axis=1)
+
+
+print(df2)
+
+
+df2.to_excel("/Users/chingchang/Downloads/2023 Invoice/ABIGAIL GAVALDA/all_data.xlsx")
